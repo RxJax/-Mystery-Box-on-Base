@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { useWallet } from './hooks/useWallet';
 import { useContract } from './hooks/useContract';
 import { rollReward, BOX_PRICE, JACKPOT_CONTRIBUTION } from './utils/rewards';
@@ -187,6 +188,7 @@ export default function App() {
           <StatsBar history={history} />
         </aside>
       </main>
+      <Analytics />
     </div>
   );
 }
