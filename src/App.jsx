@@ -111,6 +111,9 @@ export default function App() {
           <div>
             <h1 className="app-title">Mystery Box</h1>
             <p className="app-subtitle">on Base</p>
+            <a href="https://x.com/rxjax007" target="_blank" rel="noopener noreferrer" className="dev-link">
+              by @rxjax007
+            </a>
           </div>
         </div>
 

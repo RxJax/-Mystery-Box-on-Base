@@ -464,3 +464,16 @@ body {
 }
 
 .app-aside { display: flex; flex-direction: column; gap: 16px; }
+
+.dev-link {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  margin-top: 2px;
+}
+
+.dev-link:hover {
+  color: var(--blue);
+}
