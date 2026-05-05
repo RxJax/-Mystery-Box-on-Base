@@ -3,11 +3,12 @@ import { ethers } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, BOX_PRICE_ETH, ENCODED_BUILDER_STRING } from '../config/contract';
 
 export function useContract(walletAddress) {
-  const [jackpot, setJackpot]         = useState(null); // ETH string
-  const [totalOpened, setTotalOpened] = useState(null);
-  const [isLoading, setIsLoading]     = useState(false);
-  const [txHash, setTxHash]           = useState(null);
-  const [error, setError]             = useState(null);
+  const [jackpot, setJackpot]           = useState(null); // ETH string
+  const [totalOpened, setTotalOpened]   = useState(null);
+  const [claimableBalance, setClaimableBalance] = useState('0');
+  const [isLoading, setIsLoading]       = useState(false);
+  const [txHash, setTxHash]             = useState(null);
+  const [error, setError]               = useState(null);
 
   const isDeployed = CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000';
 
@@ -22,22 +23,36 @@ export function useContract(walletAddress) {
     return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
   }, [isDeployed]);
 
-  // Read jackpot + total opened
+  // Read jackpot + total opened + claimable
   const fetchStats = useCallback(async () => {
     if (!isDeployed) return;
     try {
       const contract = getContract(false);
       if (!contract) return;
-      const [jp, total] = await Promise.all([
+      
+      const calls = [
         contract.jackpotPool(),
         contract.totalBoxesOpened(),
-      ]);
-      setJackpot(ethers.formatEther(jp));
-      setTotalOpened(Number(total));
+      ];
+      
+      if (walletAddress) {
+        calls.push(contract.claimableRewards(walletAddress));
+      }
+
+      const results = await Promise.all(calls);
+      
+      setJackpot(ethers.formatEther(results[0]));
+      setTotalOpened(Number(results[1]));
+      
+      if (walletAddress && results[2]) {
+        setClaimableBalance(ethers.formatEther(results[2]));
+      } else {
+        setClaimableBalance('0');
+      }
     } catch (err) {
       console.warn('Contract read error:', err.message);
     }
-  }, [getContract, isDeployed]);
+  }, [getContract, isDeployed, walletAddress]);
 
   // Open box on-chain
   const openBoxOnChain = useCallback(async () => {
@@ -54,7 +69,6 @@ export function useContract(walletAddress) {
       });
 
       // Append Base Builder Code to transaction data
-      // This is required for tracking activity in the Base dashboard
       txData.data = txData.data + ENCODED_BUILDER_STRING.slice(2);
 
       const signer = await (new ethers.BrowserProvider(window.ethereum)).getSigner();
@@ -70,7 +84,7 @@ export function useContract(walletAddress) {
           const parsed = iface.parseLog(log);
           if (parsed.name === 'BoxOpened') {
             return {
-              tier: Number(parsed.args.tier),       // 0=Common, 1=Rare, 2=Legendary
+              tier: Number(parsed.args.tier),
               reward: ethers.formatEther(parsed.args.reward),
               tokenSymbol: parsed.args.tokenSymbol,
               txHash: tx.hash,
@@ -88,17 +102,37 @@ export function useContract(walletAddress) {
     }
   }, [isDeployed, walletAddress, getContract, fetchStats]);
 
+  // Claim rewards on-chain
+  const claimRewardsOnChain = useCallback(async () => {
+    if (!isDeployed || !walletAddress) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const contract = await getContract(true);
+      const tx = await contract.claimRewards();
+      setTxHash(tx.hash);
+      await tx.wait();
+    } catch (err) {
+      setError(err.reason || err.message || 'Claim failed');
+    } finally {
+      setIsLoading(false);
+      fetchStats();
+    }
+  }, [isDeployed, walletAddress, getContract, fetchStats]);
+
   // Auto-fetch stats
-  useEffect(() => { fetchStats(); }, [fetchStats]);
+  useEffect(() => { fetchStats(); }, [fetchStats, walletAddress]);
 
   return {
     jackpot,
     totalOpened,
+    claimableBalance,
     isLoading,
     txHash,
     error,
     isDeployed,
     openBoxOnChain,
+    claimRewardsOnChain,
     fetchStats,
   };
 }

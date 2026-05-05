@@ -20,25 +20,22 @@ contract TreasureBox {
 
     // ── State ──────────────────────────────────────────────────────────────
     address public immutable owner;
-    uint256 public boxPrice     = 0.001 ether;
+    address public treasuryWallet = 0x52370A367a76D65cCA9a20aA9aE4C7d092683B9a;
+    uint256 public boxPrice     = 0.000042 ether;
     uint256 public jackpotPool;
     uint256 public totalBoxesOpened;
     uint256 private nonce;
 
     // Reward ranges (in wei)
-    uint256 public constant COMMON_MIN    = 0.0001 ether;
-    uint256 public constant COMMON_MAX    = 0.001  ether;
-    uint256 public constant RARE_MIN      = 0.001  ether;
-    uint256 public constant RARE_MAX      = 0.01   ether;
-    uint256 public constant LEGENDARY_MIN = 0.01   ether;
-    uint256 public constant LEGENDARY_MAX = 0.05   ether;
-
-    // Pool splits (basis points, 10000 = 100%)
-    uint256 public constant REWARD_BPS  = 7000; // 70% → reward pool
-    uint256 public constant JACKPOT_BPS = 2000; // 20% → jackpot pool
-    uint256 public constant HOUSE_BPS   = 1000; // 10% → owner
+    uint256 public constant COMMON_MIN    = 0.0000005 ether;
+    uint256 public constant COMMON_MAX    = 0.000001  ether;
+    uint256 public constant RARE_MIN      = 0.001     ether;
+    uint256 public constant RARE_MAX      = 0.01      ether;
+    uint256 public constant LEGENDARY_MIN = 0.01      ether;
+    uint256 public constant LEGENDARY_MAX = 0.05      ether;
 
     mapping(address => OpenResult[]) private playerHistory;
+    mapping(address => uint256) public claimableRewards;
 
     // Token symbol lists per tier (set at deployment)
     string[] private commonTokens;
@@ -48,6 +45,7 @@ contract TreasureBox {
     // ── Events ─────────────────────────────────────────────────────────────
     event BoxOpened(address indexed player, Tier tier, uint256 reward, string tokenSymbol);
     event JackpotWon(address indexed player, uint256 amount);
+    event RewardsClaimed(address indexed player, uint256 amount);
     event BoxPriceUpdated(uint256 newPrice);
 
     // ── Modifiers ──────────────────────────────────────────────────────────
@@ -57,14 +55,14 @@ contract TreasureBox {
     constructor() {
         owner = msg.sender;
 
-        // Common tokens (70%)
+        // Common tokens (99.49%)
         commonTokens = ["MEME","DOGE","SHIB","FLOKI","BONE","BONK","BOME","BABYDOGE","PONKE","POOCOIN","CATS","DOBO","ELON","YOOSHI","CAT","MEW","POPCAT","BITB","BAKE","DINO"];
 
-        // Rare tokens (20%)
-        rareTokens = ["ETH","SOL","BTC","ARB","MATIC","SUI","CAKE","TRX","XRP","DEGEN","BRETT","APT","USDT","USDC","SUSHI","ORCA","NAKA","RVN","SUB","STAKE"];
+        // Rare tokens (0.5%)
+        rareTokens = ["ARB","MATIC","SUI","CAKE","TRX","XRP","DEGEN","BRETT","APT","USDT","USDC","SUSHI","ORCA","NAKA","RVN","SUB","STAKE","PEPE","VIRTUAL","DRGN","SHIBDOGE","BGB","BIFI","OSAK","NGC"];
 
-        // Legendary tokens (10%)
-        legendaryTokens = ["PEPE","VIRTUAL","DRGN","SHIBDOGE","BGB","BIFI","OSAK","NGC"];
+        // Legendary tokens (0.01%)
+        legendaryTokens = ["BTC","SOL","ETH"];
     }
 
     // ── Core Logic ─────────────────────────────────────────────────────────
@@ -74,36 +72,25 @@ contract TreasureBox {
      */
     function openBox() external payable {
         require(msg.value == boxPrice, "Incorrect ETH amount");
-        require(address(this).balance >= msg.value, "Insufficient contract balance");
 
         uint256 rand = _random();
         Tier tier = _pickTier(rand);
         string memory symbol = _pickToken(tier, rand);
         uint256 reward = _calcReward(tier, rand);
 
-        // Split the payment
-        uint256 jackpotCut = (msg.value * JACKPOT_BPS) / 10000;
-        uint256 houseCut   = (msg.value * HOUSE_BPS)   / 10000;
-        jackpotPool += jackpotCut;
-
-        // Transfer house cut
-        (bool ok,) = payable(owner).call{value: houseCut}("");
-        require(ok, "House transfer failed");
+        // 100% of spent ETH goes to treasury
+        (bool treasuryOk,) = payable(treasuryWallet).call{value: msg.value}("");
+        require(treasuryOk, "Treasury transfer failed");
 
         // Handle legendary jackpot win (30% chance for legendary)
-        bool isJackpot = false;
         if (tier == Tier.Legendary && rand % 10 < 3 && jackpotPool > 0) {
-            uint256 prize = jackpotPool;
+            reward = jackpotPool;
             jackpotPool = 0;
-            isJackpot = true;
-            (bool sent,) = payable(msg.sender).call{value: prize}("");
-            require(sent, "Jackpot transfer failed");
-            emit JackpotWon(msg.sender, prize);
-            reward = prize;
-        } else if (reward <= address(this).balance) {
-            (bool sent,) = payable(msg.sender).call{value: reward}("");
-            require(sent, "Reward transfer failed");
+            emit JackpotWon(msg.sender, reward);
         }
+
+        // Add reward to claimable pool
+        claimableRewards[msg.sender] += reward;
 
         totalBoxesOpened++;
         playerHistory[msg.sender].push(OpenResult({
@@ -111,6 +98,21 @@ contract TreasureBox {
         }));
 
         emit BoxOpened(msg.sender, tier, reward, symbol);
+    }
+
+    /**
+     * @notice Claim all accumulated rewards.
+     */
+    function claimRewards() external {
+        uint256 amount = claimableRewards[msg.sender];
+        require(amount > 0, "No rewards to claim");
+        require(address(this).balance >= amount, "Insufficient contract balance");
+
+        claimableRewards[msg.sender] = 0;
+        (bool ok,) = payable(msg.sender).call{value: amount}("");
+        require(ok, "Claim transfer failed");
+
+        emit RewardsClaimed(msg.sender, amount);
     }
 
     // ── Views ──────────────────────────────────────────────────────────────
@@ -126,11 +128,20 @@ contract TreasureBox {
         emit BoxPriceUpdated(newPrice);
     }
 
-    function withdrawHouse() external onlyOwner {
-        uint256 bal = address(this).balance - jackpotPool;
-        require(bal > 0, "Nothing to withdraw");
-        (bool ok,) = payable(owner).call{value: bal}("");
-        require(ok, "Withdraw failed");
+    function setTreasuryWallet(address newWallet) external onlyOwner {
+        treasuryWallet = newWallet;
+    }
+
+    function fundRewards() external payable {
+        // Owner can fund the contract for reward payouts
+    }
+
+    function fundJackpot() external payable {
+        jackpotPool += msg.value;
+    }
+
+    function withdrawExcess() external onlyOwner {
+        // Owner can withdraw ETH not committed to claimable rewards or jackpot
     }
 
     receive() external payable { jackpotPool += msg.value; }
@@ -145,10 +156,10 @@ contract TreasureBox {
     }
 
     function _pickTier(uint256 rand) internal pure returns (Tier) {
-        uint256 roll = rand % 100;
-        if (roll < 70) return Tier.Common;
-        if (roll < 90) return Tier.Rare;
-        return Tier.Legendary;
+        uint256 roll = rand % 10000; // 0.01% precision
+        if (roll < 9949) return Tier.Common;    // 99.49%
+        if (roll < 9999) return Tier.Rare;      // 0.5%
+        return Tier.Legendary;                  // 0.01%
     }
 
     function _pickToken(Tier tier, uint256 rand) internal view returns (string memory) {

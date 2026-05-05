@@ -115,6 +115,28 @@ export default function App() {
         {/* Left column: jackpot + history */}
         <aside className="app-aside">
           <JackpotPool jackpot={jackpot} totalOpened={totalOpened} />
+          
+          {wallet.address && (
+            <div className="claim-panel glass-panel">
+              <div className="claim-header">
+                <span>🎁</span>
+                <span className="claim-title">My Rewards</span>
+              </div>
+              <div className="claim-amount">
+                <span className="claim-value">{parseFloat(contract.claimableBalance).toFixed(8)}</span>
+                <span className="claim-unit">ETH</span>
+              </div>
+              <button 
+                className="btn btn--claim" 
+                onClick={contract.claimRewardsOnChain}
+                disabled={contract.isLoading || parseFloat(contract.claimableBalance) === 0}
+              >
+                {contract.isLoading ? 'Claiming...' : 'Claim to Wallet'}
+              </button>
+              <p className="claim-hint">Rewards are collected here after opening boxes.</p>
+            </div>
+          )}
+
           <RewardHistory history={history} />
         </aside>
 
