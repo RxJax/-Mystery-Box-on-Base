@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { useWallet } from './hooks/useWallet';
 import { useContract } from './hooks/useContract';
 import { rollReward, BOX_PRICE, JACKPOT_CONTRIBUTION } from './utils/rewards';
