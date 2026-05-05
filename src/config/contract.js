@@ -16,7 +16,7 @@ export const SUPPORTED_CHAINS = [BASE_CHAIN_ID];
 
 export const CHAIN_CONFIG = {
   [BASE_CHAIN_ID]: {
-    name: 'Base Mainnet',
+    name: 'Base',
     rpcUrl: 'https://mainnet.base.org',
     blockExplorer: 'https://basescan.org',
     color: '#0052ff',
