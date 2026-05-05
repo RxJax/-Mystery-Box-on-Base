@@ -67,6 +67,8 @@ export default function App() {
         const token = TOKENS.find(t => t.symbol === raw.tokenSymbol) ?? TOKENS[0];
         result = { token, tier, reward: parseFloat(raw.reward), isJackpot: raw.isJackpot ?? false };
       }
+    } else if (wallet.address && !contract.isDeployed) {
+      alert("Smart contract address not set! Please deploy TreasureBox.sol and update CONTRACT_ADDRESS in src/config/contract.js");
     }
 
     if (result) {
