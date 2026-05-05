@@ -89,8 +89,8 @@ contract TreasureBox {
 
         // The remaining 40% stays in address(this) balance automatically
 
-        // Handle legendary jackpot win (30% chance for legendary)
-        if (tier == Tier.Legendary && rand % 10 < 3 && jackpotPool > 0) {
+        // Handle legendary jackpot win (1% chance for legendary, total 1 in 1,000,000)
+        if (tier == Tier.Legendary && rand % 100 < 1 && jackpotPool > 0) {
             reward = jackpotPool;
             jackpotPool = 0;
             emit JackpotWon(msg.sender, reward);
