@@ -114,6 +114,12 @@ export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice }) {
         {getButtonContent()}
       </button>
 
+      {wallet.error && (
+        <div className="box-error" style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '10px', textAlign: 'center', fontWeight: '500' }}>
+          ⚠️ {wallet.error}
+        </div>
+      )}
+
       <p className="box-hint">
         {!isConnected ? 'Wallet connection required' : !isCorrectChain ? 'Please switch to Base L2' : isOpening ? 'Revealing your reward…' : 'Tap to open and discover your reward'}
       </p>
