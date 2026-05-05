@@ -25,7 +25,7 @@ export default function StatsBar({ history }) {
       <div className="stat-divider" />
       <div className="stat-item">
         <span className="stat-value stat-value--gold">
-          {biggestWin > 0 ? `${biggestWin.toFixed(4)}` : '—'}
+          {biggestWin > 0 ? `${biggestWin.toFixed(8)}` : '—'}
         </span>
         <span className="stat-label">Best Win (ETH)</span>
       </div>

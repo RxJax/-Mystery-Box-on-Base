@@ -14,9 +14,9 @@ export const TIER_CONFIG = {
     glow: '0 0 20px rgba(34,211,238,0.6), 0 0 40px rgba(34,211,238,0.3)',
     bgGradient: 'linear-gradient(135deg, #164e63 0%, #0e7490 100%)',
     badgeGradient: 'linear-gradient(90deg, #0891b2, #22d3ee)',
-    rewardMin: 0.0001,
-    rewardMax: 0.001,
-    probability: 0.70,
+    rewardMin: 0.0000005,
+    rewardMax: 0.000001,
+    probability: 0.9949, // 99.49%
   },
   [TIERS.RARE]: {
     label: 'RARE',
@@ -26,7 +26,7 @@ export const TIER_CONFIG = {
     badgeGradient: 'linear-gradient(90deg, #7c3aed, #a855f7)',
     rewardMin: 0.001,
     rewardMax: 0.01,
-    probability: 0.20,
+    probability: 0.005, // 0.5%
   },
   [TIERS.LEGENDARY]: {
     label: 'LEGENDARY ⚡',
@@ -36,12 +36,12 @@ export const TIER_CONFIG = {
     badgeGradient: 'linear-gradient(90deg, #d97706, #f7c94f, #fbbf24)',
     rewardMin: 0.01,
     rewardMax: 0.05,
-    probability: 0.10,
+    probability: 0.0001, // 0.01%
   },
 };
 
 export const TOKENS = [
-  // ── COMMON (70%) ─────────────────────────────────────────────────────────
+  // ── COMMON (99.49%) ─────────────────────────────────────────────────────────
   { file: 'meme-meme-logo.png',                symbol: 'MEME',      name: 'Meme Coin',       tier: TIERS.COMMON },
   { file: 'dogecoin-doge-logo.png',            symbol: 'DOGE',      name: 'Dogecoin',        tier: TIERS.COMMON },
   { file: 'shiba-inu-shib-logo.png',           symbol: 'SHIB',      name: 'Shiba Inu',       tier: TIERS.COMMON },
@@ -63,10 +63,7 @@ export const TOKENS = [
   { file: 'bakerytoken-bake-logo.png',         symbol: 'BAKE',      name: 'BakeryToken',     tier: TIERS.COMMON },
   { file: 'dinolfg-dino-logo.png',             symbol: 'DINO',      name: 'DinoLFG',         tier: TIERS.COMMON },
 
-  // ── RARE (20%) ──────────────────────────────────────────────────────────
-  { file: 'ethereum-eth-logo.png',             symbol: 'ETH',       name: 'Ethereum',        tier: TIERS.RARE },
-  { file: 'solana-sol-logo.png',               symbol: 'SOL',       name: 'Solana',          tier: TIERS.RARE },
-  { file: 'bitcoin-btc-logo.png',              symbol: 'BTC',       name: 'Bitcoin',         tier: TIERS.RARE },
+  // ── RARE (0.5%) ──────────────────────────────────────────────────────────
   { file: 'arbitrum-arb-logo.png',             symbol: 'ARB',       name: 'Arbitrum',        tier: TIERS.RARE },
   { file: 'polygon-matic-logo.png',            symbol: 'MATIC',     name: 'Polygon',         tier: TIERS.RARE },
   { file: 'sui-sui-logo.png',                  symbol: 'SUI',       name: 'Sui',             tier: TIERS.RARE },
@@ -84,16 +81,19 @@ export const TOKENS = [
   { file: 'ravencoin-rvn-logo.png',            symbol: 'RVN',       name: 'Ravencoin',       tier: TIERS.RARE },
   { file: 'substratum-sub-logo.png',           symbol: 'SUB',       name: 'Substratum',      tier: TIERS.RARE },
   { file: 'xdai-stake-logo.png',               symbol: 'STAKE',     name: 'xDAI Stake',      tier: TIERS.RARE },
+  { file: 'pepe-pepe-logo.png',                symbol: 'PEPE',      name: 'Pepe',            tier: TIERS.RARE },
+  { file: 'virtual-protocol-virtual-logo.png', symbol: 'VIRTUAL',   name: 'Virtual Protocol',tier: TIERS.RARE },
+  { file: 'dragonchain-drgn-logo.png',         symbol: 'DRGN',      name: 'Dragonchain',     tier: TIERS.RARE },
+  { file: 'shibadoge-shibdoge-logo.png',       symbol: 'SHIBDOGE',  name: 'ShibaDoge',       tier: TIERS.RARE },
+  { file: 'bitget-token-new-bgb-logo.png',     symbol: 'BGB',       name: 'Bitget Token',    tier: TIERS.RARE },
+  { file: 'beefy-finance-bifi-logo.png',       symbol: 'BIFI',      name: 'Beefy Finance',   tier: TIERS.RARE },
+  { file: 'osaka-protocol-osak-logo.png',      symbol: 'OSAK',      name: 'Osaka Protocol',  tier: TIERS.RARE },
+  { file: 'naga-ngc-logo.png',                 symbol: 'NGC',       name: 'NAGA Coin',       tier: TIERS.RARE },
 
-  // ── LEGENDARY (10%) ─────────────────────────────────────────────────────
-  { file: 'pepe-pepe-logo.png',                symbol: 'PEPE',      name: 'Pepe',            tier: TIERS.LEGENDARY },
-  { file: 'virtual-protocol-virtual-logo.png', symbol: 'VIRTUAL',   name: 'Virtual Protocol',tier: TIERS.LEGENDARY },
-  { file: 'dragonchain-drgn-logo.png',         symbol: 'DRGN',      name: 'Dragonchain',     tier: TIERS.LEGENDARY },
-  { file: 'shibadoge-shibdoge-logo.png',       symbol: 'SHIBDOGE',  name: 'ShibaDoge',       tier: TIERS.LEGENDARY },
-  { file: 'bitget-token-new-bgb-logo.png',     symbol: 'BGB',       name: 'Bitget Token',    tier: TIERS.LEGENDARY },
-  { file: 'beefy-finance-bifi-logo.png',       symbol: 'BIFI',      name: 'Beefy Finance',   tier: TIERS.LEGENDARY },
-  { file: 'osaka-protocol-osak-logo.png',      symbol: 'OSAK',      name: 'Osaka Protocol',  tier: TIERS.LEGENDARY },
-  { file: 'naga-ngc-logo.png',                 symbol: 'NGC',       name: 'NAGA Coin',       tier: TIERS.LEGENDARY },
+  // ── LEGENDARY (0.01%) ─────────────────────────────────────────────────────
+  { file: 'bitcoin-btc-logo.png',              symbol: 'BTC',       name: 'Bitcoin',         tier: TIERS.LEGENDARY },
+  { file: 'ethereum-eth-logo.png',             symbol: 'ETH',       name: 'Ethereum',        tier: TIERS.LEGENDARY },
+  { file: 'solana-sol-logo.png',               symbol: 'SOL',       name: 'Solana',          tier: TIERS.LEGENDARY },
 ];
 
 // Pre-split by tier for fast lookup

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, CONTRACT_ABI, BOX_PRICE_ETH } from '../config/contract';
+import { CONTRACT_ADDRESS, CONTRACT_ABI, BOX_PRICE_ETH, ENCODED_BUILDER_STRING } from '../config/contract';
 
 export function useContract(walletAddress) {
   const [jackpot, setJackpot]         = useState(null); // ETH string
@@ -47,9 +47,19 @@ export function useContract(walletAddress) {
     setTxHash(null);
     try {
       const contract = await getContract(true);
-      const tx = await contract.openBox({
+      
+      // Populate transaction data
+      const txData = await contract.openBox.populateTransaction({
         value: ethers.parseEther(BOX_PRICE_ETH),
       });
+
+      // Append Base Builder Code to transaction data
+      // This is required for tracking activity in the Base dashboard
+      txData.data = txData.data + ENCODED_BUILDER_STRING.slice(2);
+
+      const signer = await (new ethers.BrowserProvider(window.ethereum)).getSigner();
+      const tx = await signer.sendTransaction(txData);
+
       setTxHash(tx.hash);
       const receipt = await tx.wait();
 

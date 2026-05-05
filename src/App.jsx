@@ -41,15 +41,10 @@ export default function App() {
   const [isOpening, setIsOpening] = useState(false);
   const [lastResult, setLastResult] = useState(null); // { token, tier, reward, isJackpot }
   const [history, setHistory] = useState([]);
-  const [demoMode] = useState(true); // Flip to false once contract is deployed
 
-  // Effective jackpot: prefer on-chain, fall back to demo
-  const jackpot = !demoMode && contract.isDeployed
-    ? parseFloat(contract.jackpot ?? 0)
-    : demo.jackpot;
-  const totalOpened = !demoMode && contract.isDeployed
-    ? contract.totalOpened
-    : demo.totalOpened;
+  // On-chain stats
+  const jackpot = parseFloat(contract.jackpot ?? 0);
+  const totalOpened = contract.totalOpened ?? 0;
 
   const handleOpen = useCallback(async () => {
     if (isOpening) return;
@@ -58,7 +53,7 @@ export default function App() {
 
     let result;
 
-    if (!demoMode && contract.isDeployed && wallet.address) {
+    if (contract.isDeployed && wallet.address) {
       // ── On-chain open ──────────────────────────────────────────────
       // Wait for animation then fire transaction
       await new Promise(r => setTimeout(r, TOTAL_ANIMATION_MS));
@@ -71,20 +66,15 @@ export default function App() {
         const { TOKENS } = await import('./config/tokens');
         const token = TOKENS.find(t => t.symbol === raw.tokenSymbol) ?? TOKENS[0];
         result = { token, tier, reward: parseFloat(raw.reward), isJackpot: raw.isJackpot ?? false };
-      } else {
-        // Transaction failed — fall back to demo roll so the UI doesn't stall
-        result = demo.simulateOpen(demo.jackpot);
       }
-    } else {
-      // ── Demo simulation ────────────────────────────────────────────
-      await new Promise(r => setTimeout(r, TOTAL_ANIMATION_MS));
-      result = demo.simulateOpen(demo.jackpot);
     }
 
-    setLastResult(result);
-    setHistory(prev => [...prev, { ...result, timestamp: Date.now() }]);
+    if (result) {
+      setLastResult(result);
+      setHistory(prev => [{ ...result, timestamp: Date.now() }, ...prev]);
+    }
     setIsOpening(false);
-  }, [isOpening, demoMode, contract, wallet.address, demo]);
+  }, [isOpening, contract, wallet.address]);
 
   const handlePlayAgain = useCallback(() => {
     setLastResult(null);
@@ -120,13 +110,6 @@ export default function App() {
         <WalletBar wallet={wallet} onConnect={wallet.connect} />
       </header>
 
-      {/* Demo mode banner */}
-      {demoMode && (
-        <div className="demo-banner">
-          🎮 Demo Mode — No real ETH required. Deploy the contract to play on-chain!
-        </div>
-      )}
-
       {/* ── MAIN CONTENT ────────────────────────────────────────────── */}
       <main className="app-main">
         {/* Left column: jackpot + history */}
@@ -137,13 +120,31 @@ export default function App() {
 
         {/* Center: mystery box */}
         <section className="app-center">
+          {/* Network Enforcement Overlay */}
+          {wallet.address && !wallet.isCorrectChain && (
+            <div className="network-warning">
+              <div className="network-warning-content">
+                <span className="network-icon">🌐</span>
+                <h2 className="network-title">Network Switch Required</h2>
+                <p className="network-message">
+                  {wallet.isEthereumMainnet 
+                    ? "You are currently on Ethereum mainnet, please switch to Base network to continue."
+                    : "Base network is required to play. Please switch your wallet to Base L2."}
+                </p>
+                <button className="btn btn--switch" onClick={wallet.switchToBase} style={{ padding: '12px 24px', fontSize: '1rem' }}>
+                  ⚡ Switch to Base
+                </button>
+              </div>
+            </div>
+          )}
+
           {lastResult ? (
             <RewardReveal result={lastResult} onPlayAgain={handlePlayAgain} />
           ) : (
             <MysteryBox
               onOpen={handleOpen}
               isOpening={isOpening}
-              isDisabled={false}
+              isDisabled={wallet.address && !wallet.isCorrectChain}
               boxPrice={BOX_PRICE}
             />
           )}
@@ -160,15 +161,13 @@ export default function App() {
               <span className="tier-dot" style={{ background: '#22d3ee' }} />
               <div className="tier-info">
                 <span className="tier-name">Common</span>
-                <span className="tier-chance">70% chance</span>
               </div>
-              <span className="tier-reward">0.0001–0.001 ETH</span>
+              <span className="tier-reward">0.0000005–0.000001 ETH</span>
             </div>
             <div className="tier-row tier-row--rare">
               <span className="tier-dot" style={{ background: '#a855f7' }} />
               <div className="tier-info">
                 <span className="tier-name">Rare</span>
-                <span className="tier-chance">20% chance</span>
               </div>
               <span className="tier-reward">0.001–0.01 ETH</span>
             </div>
@@ -176,7 +175,6 @@ export default function App() {
               <span className="tier-dot" style={{ background: '#f7c94f' }} />
               <div className="tier-info">
                 <span className="tier-name">Legendary ⚡</span>
-                <span className="tier-chance">10% chance</span>
               </div>
               <span className="tier-reward">Jackpot!</span>
             </div>

@@ -17,25 +17,25 @@ function pick(arr) {
 function randomReward(tier) {
   const cfg = TIER_CONFIG[tier];
   const val = cfg.rewardMin + Math.random() * (cfg.rewardMax - cfg.rewardMin);
-  return parseFloat(val.toFixed(4));
+  return parseFloat(val.toFixed(8)); // More precision for small rewards
 }
 
 /**
  * Roll a random reward.
  * Returns { token, tier, reward, isJackpot }
  *
- * Probability distribution:
- *   Common:    70%
- *   Rare:      20%
- *   Legendary: 10%
+ * New Probability distribution:
+ *   Common:    99.49%
+ *   Rare:      0.5%
+ *   Legendary: 0.01%
  */
 export function rollReward(currentJackpot = 0) {
   const roll = Math.random();
 
   let tier;
-  if (roll < 0.70) {
+  if (roll < 0.9949) {
     tier = TIERS.COMMON;
-  } else if (roll < 0.90) {
+  } else if (roll < 0.9999) { // 0.9949 + 0.005
     tier = TIERS.RARE;
   } else {
     tier = TIERS.LEGENDARY;
@@ -50,7 +50,7 @@ export function rollReward(currentJackpot = 0) {
 
   // For legendary, there's a 30% chance to win the jackpot
   const isJackpot = tier === TIERS.LEGENDARY && Math.random() < 0.30 && currentJackpot > 0;
-  const reward = isJackpot ? parseFloat(currentJackpot.toFixed(4)) : randomReward(tier);
+  const reward = isJackpot ? parseFloat(currentJackpot.toFixed(8)) : randomReward(tier);
 
   return { token, tier, reward, isJackpot };
 }
@@ -63,4 +63,4 @@ export const JACKPOT_CONTRIBUTION = 0.20;
 /**
  * Box price in ETH.
  */
-export const BOX_PRICE = 0.001;
+export const BOX_PRICE = 0.000042;

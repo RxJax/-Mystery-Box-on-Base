@@ -12,7 +12,7 @@ function useCountUp(target, duration = 1200) {
     const step = (now) => {
       const progress = Math.min((now - startTime) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      setDisplay(parseFloat((start + (end - start) * eased).toFixed(5)));
+      setDisplay(parseFloat((start + (end - start) * eased).toFixed(8)));
       if (progress < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -37,7 +37,7 @@ export default function JackpotPool({ jackpot, totalOpened }) {
 
       {/* Amount */}
       <div className="jackpot-amount">
-        <span className="jackpot-eth">{displayed.toFixed(5)}</span>
+        <span className="jackpot-eth">{displayed.toFixed(8)}</span>
         <span className="jackpot-unit">ETH</span>
       </div>
 

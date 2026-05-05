@@ -3,25 +3,23 @@
 
 export const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // TODO: Deploy and paste address here
 
-export const BOX_PRICE_ETH = '0.001'; // 0.001 ETH per box open
+export const BOX_PRICE_ETH = '0.000042'; // 0.000042 ETH per box open
 
 export const BASE_CHAIN_ID    = 8453;   // Base Mainnet
-export const BASE_SEPOLIA_ID  = 84532;  // Base Sepolia (testnet)
 
-export const SUPPORTED_CHAINS = [BASE_CHAIN_ID, BASE_SEPOLIA_ID];
+// Base Builder Code Integration
+// Documentation: https://docs.base.org/apps/builder-codes/builder-codes
+export const BUILDER_CODE = 'bc_jk7yfoac';
+export const ENCODED_BUILDER_STRING = '0x62635f6a6b3779666f61630b0080218021802180218021802180218021';
+
+export const SUPPORTED_CHAINS = [BASE_CHAIN_ID];
 
 export const CHAIN_CONFIG = {
   [BASE_CHAIN_ID]: {
-    name: 'Base',
+    name: 'Base Mainnet',
     rpcUrl: 'https://mainnet.base.org',
     blockExplorer: 'https://basescan.org',
     color: '#0052ff',
-  },
-  [BASE_SEPOLIA_ID]: {
-    name: 'Base Sepolia',
-    rpcUrl: 'https://sepolia.base.org',
-    blockExplorer: 'https://sepolia.basescan.org',
-    color: '#6366f1',
   },
 };
 

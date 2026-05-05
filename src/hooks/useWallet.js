@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { SUPPORTED_CHAINS, CHAIN_CONFIG, BASE_SEPOLIA_ID } from '../config/contract';
+import { SUPPORTED_CHAINS, CHAIN_CONFIG, BASE_CHAIN_ID } from '../config/contract';
 
 export function useWallet() {
   const [address, setAddress]     = useState(null);
@@ -10,7 +10,11 @@ export function useWallet() {
 
   const isMetaMask = typeof window !== 'undefined' && !!window.ethereum;
   const isCorrectChain = chainId !== null && SUPPORTED_CHAINS.includes(chainId);
+  const isEthereumMainnet = chainId === 1;
   const chainConfig = chainId ? (CHAIN_CONFIG[chainId] ?? null) : null;
+
+  // Use Base Mainnet as the default target if on wrong network
+  const targetChainId = SUPPORTED_CHAINS.includes(chainId) ? chainId : BASE_CHAIN_ID;
 
   // Fetch ETH balance
   const fetchBalance = useCallback(async (addr) => {
@@ -30,8 +34,8 @@ export function useWallet() {
 
   // Connect wallet
   const connect = useCallback(async () => {
-    if (!isMetaMask) {
-      setError('MetaMask not found. Install it at metamask.io');
+    if (!window.ethereum) {
+      setError('EVM Wallet not found. Please use Base app or MetaMask.');
       return;
     }
     setIsConnecting(true);
@@ -50,24 +54,24 @@ export function useWallet() {
     } finally {
       setIsConnecting(false);
     }
-  }, [isMetaMask, fetchBalance]);
+  }, [fetchBalance]);
 
-  // Disconnect (clear state only — MetaMask doesn't expose a real disconnect)
+  // Disconnect
   const disconnect = useCallback(() => {
     setAddress(null);
     setBalance(null);
     setChainId(null);
   }, []);
 
-  // Switch to Base Sepolia
+  // Switch to Base
   const switchToBase = useCallback(async () => {
     if (!window.ethereum) return;
-    const targetId = BASE_SEPOLIA_ID;
-    const cfg = CHAIN_CONFIG[targetId];
+    const cfg = CHAIN_CONFIG[BASE_CHAIN_ID];
+    const hexId = '0x' + BASE_CHAIN_ID.toString(16);
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x' + targetId.toString(16) }],
+        params: [{ chainId: hexId }],
       });
     } catch (switchError) {
       // Chain not added — try adding it
@@ -75,7 +79,7 @@ export function useWallet() {
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [{
-            chainId: '0x' + targetId.toString(16),
+            chainId: hexId,
             chainName: cfg.name,
             rpcUrls: [cfg.rpcUrl],
             blockExplorerUrls: [cfg.blockExplorer],
@@ -86,7 +90,7 @@ export function useWallet() {
     }
   }, []);
 
-  // Listen for MetaMask account/chain changes
+  // Listen for changes
   useEffect(() => {
     if (!window.ethereum) return;
     const onAccounts = (accounts) => {
@@ -103,7 +107,7 @@ export function useWallet() {
     };
   }, [disconnect, fetchBalance]);
 
-  // Auto-connect if already authorized
+  // Auto-connect
   useEffect(() => {
     if (!window.ethereum) return;
     window.ethereum.request({ method: 'eth_accounts' }).then(async (accounts) => {
@@ -120,8 +124,10 @@ export function useWallet() {
     address,
     balance,
     chainId,
+    targetChainId,
     chainConfig,
-    isMetaMask,
+    isEthereumMainnet,
+    isMetaMask, // renaming to isEVM for clarity
     isConnecting,
     isCorrectChain,
     error,
