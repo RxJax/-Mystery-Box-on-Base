@@ -1,7 +1,7 @@
 // Contract config — update CONTRACT_ADDRESS after deployment
 // ABI includes only the functions used by the frontend
 
-export const CONTRACT_ADDRESS = '0x68547D98C216f14C5FcCD926141281c75443CB63';
+export const CONTRACT_ADDRESS = '0x5586264937c3688B0E8C5b22805eD548dBFCB35e';
 
 export const BOX_PRICE_ETH = '0.000042'; // 0.000042 ETH per box open
 
