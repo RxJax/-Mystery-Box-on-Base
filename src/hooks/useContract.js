@@ -6,6 +6,7 @@ export function useContract(walletAddress) {
   const [jackpot, setJackpot]           = useState(null); // ETH string
   const [totalOpened, setTotalOpened]   = useState(null);
   const [claimableBalance, setClaimableBalance] = useState('0');
+  const [recentHistory, setRecentHistory] = useState([]);
   const [isLoading, setIsLoading]       = useState(false);
   const [txHash, setTxHash]             = useState(null);
   const [error, setError]               = useState(null);
@@ -23,7 +24,7 @@ export function useContract(walletAddress) {
     return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
   }, [isDeployed]);
 
-  // Read jackpot + total opened + claimable
+  // Read jackpot + total opened + claimable + events
   const fetchStats = useCallback(async () => {
     if (!isDeployed) return;
     try {
@@ -33,6 +34,7 @@ export function useContract(walletAddress) {
       const calls = [
         contract.jackpotPool(),
         contract.totalBoxesOpened(),
+        contract.queryFilter('BoxOpened', -100), // Last 100 blocks or so
       ];
       
       if (walletAddress) {
@@ -44,8 +46,19 @@ export function useContract(walletAddress) {
       setJackpot(ethers.formatEther(results[0]));
       setTotalOpened(Number(results[1]));
       
-      if (walletAddress && results[2]) {
-        setClaimableBalance(ethers.formatEther(results[2]));
+      // Parse events for global history
+      const events = results[2].map(e => ({
+        player: e.args.player,
+        tier: Number(e.args.tier),
+        reward: ethers.formatEther(e.args.reward),
+        tokenSymbol: e.args.tokenSymbol,
+        timestamp: Date.now(), // approximation or fetch block
+        txHash: e.transactionHash
+      })).reverse();
+      setRecentHistory(events);
+
+      if (walletAddress && results[3]) {
+        setClaimableBalance(ethers.formatEther(results[3]));
       } else {
         setClaimableBalance('0');
       }
@@ -127,6 +140,7 @@ export function useContract(walletAddress) {
     jackpot,
     totalOpened,
     claimableBalance,
+    recentHistory,
     isLoading,
     txHash,
     error,

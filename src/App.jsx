@@ -82,6 +82,28 @@ export default function App() {
     setLastResult(null);
   }, []);
 
+  // Merge contract history with local simulation results
+  const displayHistory = useMemo(() => {
+    // If not deployed, use local history
+    if (!contract.isDeployed) return history;
+    
+    // Map contract events to the UI format
+    const events = contract.recentHistory.map(item => {
+      const tierMap = { 0: TIERS.COMMON, 1: TIERS.RARE, 2: TIERS.LEGENDARY };
+      const tier = tierMap[item.tier] || TIERS.COMMON;
+      const token = TOKENS.find(t => t.symbol === item.tokenSymbol) || TOKENS[0];
+      
+      return {
+        ...item,
+        tier,
+        token,
+        reward: parseFloat(item.reward)
+      };
+    });
+
+    return [...events, ...history];
+  }, [contract.recentHistory, contract.isDeployed, history]);
+
   return (
     <div className="app-root">
       {/* Animated background stars */}
@@ -139,7 +161,7 @@ export default function App() {
             </div>
           )}
 
-          <RewardHistory history={history} />
+          <RewardHistory history={displayHistory} />
         </aside>
 
         {/* Center: mystery box */}
@@ -209,7 +231,7 @@ export default function App() {
             </div>
           </div>
 
-          <StatsBar history={history} />
+          <StatsBar history={displayHistory} />
         </aside>
       </main>
     </div>
