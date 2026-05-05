@@ -170,8 +170,10 @@ contract TreasureBox {
 
     function _calcReward(Tier tier, uint256 rand) internal pure returns (uint256) {
         if (tier == Tier.Common) {
-            uint256 range = COMMON_MAX - COMMON_MIN;
-            return COMMON_MIN + ((rand >> 32) % range);
+            // 99.9% chance for lowest (0.0000005), 0.1% for 0.0001
+            uint256 roll = (rand >> 32) % 1000;
+            if (roll < 999) return 0.0000005 ether;
+            return 0.0001 ether;
         }
         if (tier == Tier.Rare) {
             uint256 range = RARE_MAX - RARE_MIN;

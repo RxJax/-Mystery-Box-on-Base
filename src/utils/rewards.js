@@ -16,6 +16,10 @@ function pick(arr) {
  */
 function randomReward(tier) {
   const cfg = TIER_CONFIG[tier];
+  if (tier === TIERS.COMMON) {
+    // 99.9% chance for lowest, 0.1% for 0.0001
+    return Math.random() < 0.999 ? 0.0000005 : 0.0001;
+  }
   const val = cfg.rewardMin + Math.random() * (cfg.rewardMax - cfg.rewardMin);
   return parseFloat(val.toFixed(8)); // More precision for small rewards
 }

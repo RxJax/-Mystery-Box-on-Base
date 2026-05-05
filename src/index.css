@@ -575,3 +575,11 @@ body {
   color: rgba(255, 255, 255, 0.3);
   margin-top: 1rem;
 }
+
+.btn-open-box--warning {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 6px 30px rgba(124, 58, 237, 0.35);
+}
+.btn-open-box--warning:hover:not(:disabled) {
+  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.5);
+}

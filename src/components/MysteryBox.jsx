@@ -5,9 +5,13 @@ const SPIN_DURATION_MS = 2200;
 const CRACK_DURATION_MS = 400;
 
 // States: idle | shaking | cracking | revealing | done
-export default function MysteryBox({ onOpen, isOpening, isDisabled, boxPrice }) {
+export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice }) {
   const [phase, setPhase] = useState('idle');
   const spinRef = useRef(null);
+
+  const isConnected = !!wallet.address;
+  const isCorrectChain = wallet.isCorrectChain;
+  const isDisabled = isOpening;
 
   // Reset when a new open cycle starts
   useEffect(() => {
@@ -17,17 +21,50 @@ export default function MysteryBox({ onOpen, isOpening, isDisabled, boxPrice }) 
       const t2 = setTimeout(() => setPhase('exploding'), SPIN_DURATION_MS + CRACK_DURATION_MS);
       return () => { clearTimeout(t1); clearTimeout(t2); };
     } else {
-      // After reveal is done and parent resets, go back to idle
       if (phase === 'exploding') {
         const t = setTimeout(() => setPhase('idle'), 300);
         return () => clearTimeout(t);
       }
     }
-  }, [isOpening]);
+  }, [isOpening, phase]);
 
   const handleClick = () => {
-    if (isDisabled || isOpening) return;
+    if (isOpening) return;
+    
+    if (!isConnected) {
+      wallet.connect();
+      return;
+    }
+
+    if (!isCorrectChain) {
+      wallet.switchToBase();
+      return;
+    }
+
     onOpen();
+  };
+
+  const getButtonContent = () => {
+    if (isOpening) {
+      return (
+        <span className="btn-open-text">
+          <span className="spin-dots"><span /><span /><span /></span>
+          Opening…
+        </span>
+      );
+    }
+    if (!isConnected) {
+      return <span className="btn-open-text">🔌 Connect Wallet to Play</span>;
+    }
+    if (!isCorrectChain) {
+      return <span className="btn-open-text">⚡ Switch to Base Network</span>;
+    }
+    return (
+      <span className="btn-open-text">
+        🎁 Open Mystery Box
+        <span className="btn-price">{boxPrice} ETH</span>
+      </span>
+    );
   };
 
   const boxClass = [
@@ -49,56 +86,36 @@ export default function MysteryBox({ onOpen, isOpening, isDisabled, boxPrice }) 
           <div className="box-lid-inner">
             <span className="box-question">?</span>
           </div>
-          {/* Lid shine */}
           <div className="box-lid-shine" />
         </div>
 
         {/* Body */}
         <div className="box-body">
           <div className="box-body-pattern" />
-          {/* Cracks (shown during crack phase) */}
           {(phase === 'cracking' || phase === 'exploding') && (
             <div className="box-cracks">
-              <div className="crack crack-1" />
-              <div className="crack crack-2" />
-              <div className="crack crack-3" />
+              <div className="crack crack-1" /><div className="crack crack-2" /><div className="crack crack-3" />
             </div>
           )}
         </div>
 
-        {/* Particles (shown during explode) */}
         {phase === 'exploding' && (
           <div className="box-particles">
-            {[...Array(12)].map((_, i) => (
-              <div key={i} className={`particle particle-${i + 1}`} />
-            ))}
+            {[...Array(12)].map((_, i) => <div key={i} className={`particle particle-${i + 1}`} />)}
           </div>
         )}
       </div>
 
-      {/* CTA Button */}
       <button
-        className={`btn-open-box ${isOpening ? 'btn-open-box--loading' : ''}`}
+        className={`btn-open-box ${isOpening ? 'btn-open-box--loading' : ''} ${!isConnected || !isCorrectChain ? 'btn-open-box--warning' : ''}`}
         onClick={handleClick}
-        disabled={isDisabled || isOpening}
+        disabled={isDisabled}
       >
-        {isOpening ? (
-          <span className="btn-open-text">
-            <span className="spin-dots">
-              <span /><span /><span />
-            </span>
-            Opening…
-          </span>
-        ) : (
-          <span className="btn-open-text">
-            🎁 Open Mystery Box
-            <span className="btn-price">{boxPrice} ETH</span>
-          </span>
-        )}
+        {getButtonContent()}
       </button>
 
       <p className="box-hint">
-        {isOpening ? 'Revealing your reward…' : 'Tap to open and discover your reward'}
+        {!isConnected ? 'Wallet connection required' : !isCorrectChain ? 'Please switch to Base L2' : isOpening ? 'Revealing your reward…' : 'Tap to open and discover your reward'}
       </p>
     </div>
   );

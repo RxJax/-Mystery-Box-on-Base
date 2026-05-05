@@ -166,7 +166,7 @@ export default function App() {
             <MysteryBox
               onOpen={handleOpen}
               isOpening={isOpening}
-              isDisabled={wallet.address && !wallet.isCorrectChain}
+              wallet={wallet}
               boxPrice={BOX_PRICE}
             />
           )}
