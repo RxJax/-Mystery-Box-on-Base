@@ -55,20 +55,20 @@ export default function App() {
 
     if (contract.isDeployed && wallet.address) {
       // ── On-chain open ──────────────────────────────────────────────
-      // Wait for animation then fire transaction
       await new Promise(r => setTimeout(r, TOTAL_ANIMATION_MS));
       const raw = await contract.openBoxOnChain();
       if (raw) {
-        // Map tier index (0/1/2) → tier string
         const tierMap = { 0: TIERS.COMMON, 1: TIERS.RARE, 2: TIERS.LEGENDARY };
         const tier = tierMap[raw.tier] ?? TIERS.COMMON;
-        // Find matching token by symbol
         const { TOKENS } = await import('./config/tokens');
         const token = TOKENS.find(t => t.symbol === raw.tokenSymbol) ?? TOKENS[0];
         result = { token, tier, reward: parseFloat(raw.reward), isJackpot: raw.isJackpot ?? false };
       }
-    } else if (wallet.address && !contract.isDeployed) {
-      alert("Smart contract address not set! Please deploy TreasureBox.sol and update CONTRACT_ADDRESS in src/config/contract.js");
+    } else {
+      // ── Local Simulation (Fallback) ────────────────────────────────
+      // This allows testing the UI even if the contract is not yet deployed
+      await new Promise(r => setTimeout(r, TOTAL_ANIMATION_MS));
+      result = rollReward(0.003); // Simulate with a mock jackpot
     }
 
     if (result) {
