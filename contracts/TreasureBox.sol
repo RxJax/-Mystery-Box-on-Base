@@ -192,10 +192,10 @@ contract TreasureBox {
             return 0.0001 ether;
         }
         if (tier == Tier.Rare) {
-            uint256 range = RARE_MAX - RARE_MIN;
-            return RARE_MIN + ((rand >> 32) % range);
+            uint256 rRange = RARE_MAX - RARE_MIN;
+            return RARE_MIN + ((rand >> 32) % rRange);
         }
-        uint256 range = LEGENDARY_MAX - LEGENDARY_MIN;
-        return LEGENDARY_MIN + ((rand >> 32) % range);
+        uint256 lRange = LEGENDARY_MAX - LEGENDARY_MIN;
+        return LEGENDARY_MIN + ((rand >> 32) % lRange);
     }
 }
