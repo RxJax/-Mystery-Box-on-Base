@@ -67,6 +67,9 @@ contract TreasureBox {
 
     // ── Core Logic ─────────────────────────────────────────────────────────
 
+    // Tracking total rewards across all users to ensure solvency
+    uint256 public totalClaimableRewards;
+
     /**
      * @notice Open a mystery box. Requires exactly `boxPrice` ETH.
      */
@@ -78,9 +81,13 @@ contract TreasureBox {
         string memory symbol = _pickToken(tier, rand);
         uint256 reward = _calcReward(tier, rand);
 
-        // 100% of spent ETH goes to treasury
-        (bool treasuryOk,) = payable(treasuryWallet).call{value: msg.value}("");
+        // Calculate 60% for treasury, 40% stays in contract for rewards
+        uint256 treasuryAmount = (msg.value * 60) / 100;
+        
+        (bool treasuryOk,) = payable(treasuryWallet).call{value: treasuryAmount}("");
         require(treasuryOk, "Treasury transfer failed");
+
+        // The remaining 40% stays in address(this) balance automatically
 
         // Handle legendary jackpot win (30% chance for legendary)
         if (tier == Tier.Legendary && rand % 10 < 3 && jackpotPool > 0) {
@@ -91,6 +98,7 @@ contract TreasureBox {
 
         // Add reward to claimable pool
         claimableRewards[msg.sender] += reward;
+        totalClaimableRewards += reward;
 
         totalBoxesOpened++;
         playerHistory[msg.sender].push(OpenResult({
@@ -109,6 +117,8 @@ contract TreasureBox {
         require(address(this).balance >= amount, "Insufficient contract balance");
 
         claimableRewards[msg.sender] = 0;
+        totalClaimableRewards -= amount;
+
         (bool ok,) = payable(msg.sender).call{value: amount}("");
         require(ok, "Claim transfer failed");
 
@@ -141,7 +151,13 @@ contract TreasureBox {
     }
 
     function withdrawExcess() external onlyOwner {
-        // Owner can withdraw ETH not committed to claimable rewards or jackpot
+        // Only withdraw ETH that is NOT committed to user rewards or the jackpot
+        uint256 committed = totalClaimableRewards + jackpotPool;
+        if (address(this).balance > committed) {
+            uint256 excess = address(this).balance - committed;
+            (bool ok,) = payable(owner).call{value: excess}("");
+            require(ok, "Withdraw failed");
+        }
     }
 
     receive() external payable { jackpotPool += msg.value; }
