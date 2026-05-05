@@ -32,7 +32,7 @@ function ConfettiBurst() {
 
 export default function RewardReveal({ result, onPlayAgain }) {
   const { token, tier, reward, isJackpot } = result;
-  const cfg = TIER_CONFIG[tier];
+  const cfg = TIER_CONFIG[tier] || TIER_CONFIG[TIERS.COMMON];
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

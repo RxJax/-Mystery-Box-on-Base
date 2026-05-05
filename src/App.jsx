@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { useWallet } from './hooks/useWallet';
 import { useContract } from './hooks/useContract';
 import { rollReward, BOX_PRICE, JACKPOT_CONTRIBUTION } from './utils/rewards';
-import { TIERS } from './config/tokens';
+import { TIERS, TOKENS } from './config/tokens';
 import WalletBar from './components/WalletBar';
 import MysteryBox from './components/MysteryBox';
 import RewardReveal from './components/RewardReveal';
@@ -60,7 +60,6 @@ export default function App() {
       if (raw) {
         const tierMap = { 0: TIERS.COMMON, 1: TIERS.RARE, 2: TIERS.LEGENDARY };
         const tier = tierMap[raw.tier] ?? TIERS.COMMON;
-        const { TOKENS } = await import('./config/tokens');
         const token = TOKENS.find(t => t.symbol === raw.tokenSymbol) ?? TOKENS[0];
         result = { token, tier, reward: parseFloat(raw.reward), isJackpot: raw.isJackpot ?? false };
       }
