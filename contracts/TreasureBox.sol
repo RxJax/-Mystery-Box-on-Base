@@ -20,7 +20,7 @@ contract TreasureBox {
 
     // ── State ──────────────────────────────────────────────────────────────
     address public immutable owner;
-    address public treasuryWallet = 0x52370A367a76D65cCA9a20aA9aE4C7d092683B9a;
+    address public treasuryWallet = 0x66A635D839bd99AcA93647B53B43C4d3a16Ea541;
     uint256 public boxPrice     = 0.000042 ether;
     uint256 public jackpotPool;
     uint256 public totalBoxesOpened;
