@@ -32,9 +32,9 @@ export function useContract(walletAddress) {
       if (!contract) return;
       
       const calls = [
-        contract.jackpotPool(),
-        contract.totalBoxesOpened(),
-        contract.queryFilter('BoxOpened', -100), // Last 100 blocks or so
+        contract.jackpotPool().catch(() => 0n),
+        contract.totalBoxesOpened().catch(() => 0n),
+        contract.queryFilter(contract.filters.BoxOpened(), -500).catch(() => []), 
       ];
       
       if (walletAddress) {
@@ -47,12 +47,12 @@ export function useContract(walletAddress) {
       setTotalOpened(Number(results[1]));
       
       // Parse events for global history
-      const events = results[2].map(e => ({
-        player: e.args.player,
-        tier: Number(e.args.tier),
-        reward: ethers.formatEther(e.args.reward),
-        tokenSymbol: e.args.tokenSymbol,
-        timestamp: Date.now(), // approximation or fetch block
+      const events = (results[2] || []).map(e => ({
+        player: e.args?.player || '0x0',
+        tier: e.args?.tier !== undefined ? Number(e.args.tier) : 0,
+        reward: e.args?.reward ? ethers.formatEther(e.args.reward) : '0',
+        tokenSymbol: e.args?.tokenSymbol || 'ETH',
+        timestamp: Date.now(), 
         txHash: e.transactionHash
       })).reverse();
       setRecentHistory(events);
