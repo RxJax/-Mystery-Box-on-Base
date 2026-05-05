@@ -28,11 +28,14 @@ export const CONTRACT_ABI = [
   'function boxPrice() view returns (uint256)',
   'function jackpotPool() view returns (uint256)',
   'function totalBoxesOpened() view returns (uint256)',
+  'function claimableRewards(address player) view returns (uint256)',
   'function getPlayerHistory(address player) view returns (tuple(uint8 tier, uint256 reward, string tokenSymbol, uint256 timestamp)[])',
 
   // State-changing functions
   'function openBox() payable',
+  'function claimRewards()',
 
   // Events
   'event BoxOpened(address indexed player, uint8 tier, uint256 reward, string tokenSymbol)',
+  'event RewardsClaimed(address indexed player, uint256 amount)',
 ];
