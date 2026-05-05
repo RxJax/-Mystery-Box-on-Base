@@ -184,7 +184,7 @@ export default function App() {
               <div className="tier-info">
                 <span className="tier-name">Common</span>
               </div>
-              <span className="tier-reward">0.0000005–0.000001 ETH</span>
+              <span className="tier-reward">0.0000005–0.0001 ETH</span>
             </div>
             <div className="tier-row tier-row--rare">
               <span className="tier-dot" style={{ background: '#a855f7' }} />
