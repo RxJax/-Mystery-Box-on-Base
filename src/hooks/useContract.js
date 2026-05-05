@@ -134,7 +134,12 @@ export function useContract(walletAddress) {
   }, [isDeployed, walletAddress, getContract, fetchStats]);
 
   // Auto-fetch stats
-  useEffect(() => { fetchStats(); }, [fetchStats, walletAddress]);
+  useEffect(() => {
+    fetchStats();
+    // Auto-refresh every 20 seconds to keep global history fresh
+    const interval = setInterval(fetchStats, 20000);
+    return () => clearInterval(interval);
+  }, [fetchStats, walletAddress]);
 
   return {
     jackpot,
