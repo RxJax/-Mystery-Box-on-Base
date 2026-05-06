@@ -94,26 +94,20 @@ export default function App() {
 
   // Merge contract history with local simulation results
   const displayHistory = useMemo(() => {
-    // If in demo mode or not deployed, use local history
-    if (isDemoMode || !contract.isDeployed) return history;
+    // If in demo mode, use local session history
+    if (isDemoMode) return history;
     
-    // Map contract events to the UI format
-    const events = (contract.recentHistory || []).map(item => {
-      if (!item) return null;
+    // In live mode, use the full player history from the contract
+    const pHistory = (contract.playerHistory || []).map(item => {
       const token = TOKENS.find(t => t.symbol === item.tokenSymbol) || TOKENS[0];
-      
-      return {
-        ...item,
-        token,
-        reward: parseFloat(item.reward || 0)
-      };
-    }).filter(Boolean);
+      return { ...item, token };
+    });
 
-    return [...events, ...history];
-  }, [contract.recentHistory, contract.isDeployed, history, isDemoMode]);
+    return [...pHistory, ...history];
+  }, [contract.playerHistory, history, isDemoMode]);
 
-  // Player stats for the last 24 hours
-  const displayPlayerHistory = useMemo(() => {
+  // Player stats for the last 24 hours (for StatsBar)
+  const displayStatsHistory = useMemo(() => {
     if (isDemoMode) return history;
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
@@ -258,7 +252,7 @@ export default function App() {
             </div>
           </div>
 
-          <StatsBar history={displayPlayerHistory} />
+          <StatsBar history={displayStatsHistory} />
         </aside>
       </main>
     </div>
