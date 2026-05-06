@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TIERS, TIER_CONFIG, TOKENS } from '../config/tokens';
+import { TIERS, TOKENS } from '../config/tokens';
 
 const SPIN_DURATION_MS = 2200;
 const CRACK_DURATION_MS = 400;
 
-// States: idle | shaking | cracking | revealing | done
-export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice, isDemoMode }) {
+export default function DemoMysteryBox({ onOpen, isOpening }) {
   const [phase, setPhase] = useState('idle');
   const spinRef = useRef(null);
 
-  const isConnected = !!wallet.address;
-  const isCorrectChain = wallet.isCorrectChain;
-  const isDisabled = isOpening;
+  // We'll use ETH as the example token on the box
+  const exampleToken = TOKENS.find(t => t.symbol === 'ETH') || TOKENS[0];
 
-  // Reset when a new open cycle starts
   useEffect(() => {
     if (isOpening) {
       setPhase('shaking');
@@ -30,19 +27,6 @@ export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice, isDemo
 
   const handleClick = () => {
     if (isOpening) return;
-    
-    if (!isDemoMode) {
-      if (!isConnected) {
-        wallet.connect();
-        return;
-      }
-
-      if (!isCorrectChain) {
-        wallet.switchToBase();
-        return;
-      }
-    }
-
     onOpen();
   };
 
@@ -55,22 +39,17 @@ export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice, isDemo
         </span>
       );
     }
-    if (!isDemoMode && !isConnected) {
-      return <span className="btn-open-text">🔌 Connect Wallet to Play</span>;
-    }
-    if (!isDemoMode && !isCorrectChain) {
-      return <span className="btn-open-text">⚡ Switch to Base Network</span>;
-    }
     return (
       <span className="btn-open-text">
-        🎁 {isDemoMode ? 'Open Demo Box' : 'Open Mystery Box'}
-        <span className="btn-price">{isDemoMode ? 'FREE' : `${boxPrice} ETH`}</span>
+        🎁 Open Demo Box
+        <span className="btn-price">FREE</span>
       </span>
     );
   };
 
   const boxClass = [
     'mystery-box',
+    'mystery-box--demo',
     phase === 'shaking' ? 'mystery-box--shaking' : '',
     phase === 'cracking' ? 'mystery-box--cracking' : '',
     phase === 'exploding' ? 'mystery-box--exploding' : '',
@@ -86,21 +65,34 @@ export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice, isDemo
         {/* Lid */}
         <div className="box-lid">
           <div className="box-lid-inner" style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {isDemoMode && (
-              <>
-                <img 
-                  src={`/${TOKENS.find(t => t.symbol === 'ETH')?.file || 'ethereum-eth-logo.png'}`} 
-                  alt="" 
-                  style={{ width: '28px', height: '28px', opacity: 0.4, filter: 'grayscale(1) brightness(0.5)', position: 'absolute', top: '8px', left: '10px' }} 
-                />
-                <img 
-                  src={`/${TOKENS.find(t => t.symbol === 'BTC')?.file || 'bitcoin-btc-logo.png'}`} 
-                  alt="" 
-                  style={{ width: '28px', height: '28px', opacity: 0.4, filter: 'grayscale(1) brightness(0.5)', position: 'absolute', bottom: '8px', right: '10px' }} 
-                />
-              </>
-            )}
-            <span className="box-question">?</span>
+             {/* Example Token on Lid */}
+             <img 
+               src={`/${exampleToken.file}`} 
+               alt="Example Token" 
+               style={{ 
+                 width: '32px', 
+                 height: '32px', 
+                 opacity: 0.6, 
+                 filter: 'grayscale(1) brightness(0.5)',
+                 position: 'absolute',
+                 top: '10px',
+                 left: '12px'
+               }} 
+             />
+             <span className="box-question">?</span>
+             <img 
+               src={`/${exampleToken.file}`} 
+               alt="Example Token" 
+               style={{ 
+                 width: '32px', 
+                 height: '32px', 
+                 opacity: 0.6, 
+                 filter: 'grayscale(1) brightness(0.5)',
+                 position: 'absolute',
+                 bottom: '10px',
+                 right: '12px'
+               }} 
+             />
           </div>
           <div className="box-lid-shine" />
         </div>
@@ -123,21 +115,15 @@ export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice, isDemo
       </div>
 
       <button
-        className={`btn-open-box ${isOpening ? 'btn-open-box--loading' : ''} ${(!isDemoMode && (!isConnected || !isCorrectChain)) ? 'btn-open-box--warning' : ''}`}
+        className={`btn-open-box ${isOpening ? 'btn-open-box--loading' : ''}`}
         onClick={handleClick}
-        disabled={isDisabled}
+        disabled={isOpening}
       >
         {getButtonContent()}
       </button>
 
-      {wallet.error && (
-        <div className="box-error" style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '10px', textAlign: 'center', fontWeight: '500' }}>
-          ⚠️ {wallet.error}
-        </div>
-      )}
-
       <p className="box-hint">
-        {isDemoMode ? (isOpening ? 'Revealing your reward…' : 'Tap to try the demo for free!') : (!isConnected ? 'Wallet connection required' : !isCorrectChain ? 'Please switch to Base L2' : isOpening ? 'Revealing your reward…' : 'Tap to open and discover your reward')}
+        {isOpening ? 'Revealing your reward…' : 'Tap to try the demo for free!'}
       </p>
     </div>
   );

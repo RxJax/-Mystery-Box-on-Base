@@ -60,6 +60,42 @@ export function rollReward(currentJackpot = 0) {
 }
 
 /**
+ * Roll a random reward for Demo Mode.
+ * Returns { token, tier, reward, isJackpot }
+ *
+ * Demo Probability distribution:
+ *   Common:    70%
+ *   Rare:      20%
+ *   Legendary: 10%
+ */
+export function rollDemoReward(currentJackpot = 0) {
+  const roll = Math.random();
+
+  let tier;
+  if (roll < 0.70) {
+    tier = TIERS.COMMON;
+  } else if (roll < 0.90) { // 0.70 + 0.20
+    tier = TIERS.RARE;
+  } else {
+    tier = TIERS.LEGENDARY;
+  }
+
+  let tokens;
+  if (tier === TIERS.COMMON)    tokens = COMMON_TOKENS;
+  else if (tier === TIERS.RARE) tokens = RARE_TOKENS;
+  else                          tokens = LEGENDARY_TOKENS;
+
+  const token = pick(tokens);
+
+  // For demo, we don't necessarily give the real jackpot amount, maybe just a simulated amount or 0.
+  // We'll use the same logic for visual flair.
+  const isJackpot = tier === TIERS.LEGENDARY && Math.random() < 0.30 && currentJackpot > 0;
+  const reward = isJackpot ? parseFloat(currentJackpot.toFixed(8)) : randomReward(tier);
+
+  return { token, tier, reward, isJackpot };
+}
+
+/**
  * How much of the box price goes to the jackpot pool (20%).
  */
 export const JACKPOT_CONTRIBUTION = 0.20;

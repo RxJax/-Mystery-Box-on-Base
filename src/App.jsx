@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { useWallet } from './hooks/useWallet';
 import { useContract } from './hooks/useContract';
-import { rollReward, BOX_PRICE, JACKPOT_CONTRIBUTION } from './utils/rewards';
+import { rollReward, rollDemoReward, BOX_PRICE, JACKPOT_CONTRIBUTION } from './utils/rewards';
 import { TIERS, TOKENS } from './config/tokens';
 import WalletBar from './components/WalletBar';
 import MysteryBox from './components/MysteryBox';
@@ -19,7 +19,7 @@ function useDemoMode() {
   const [totalOpened, setTotalOpened] = useState(0);
 
   const simulateOpen = useCallback((currentJackpot) => {
-    const result = rollReward(currentJackpot);
+    const result = rollDemoReward(currentJackpot);
     const contribution = BOX_PRICE * JACKPOT_CONTRIBUTION;
 
     setTotalOpened(prev => prev + 1);
@@ -38,13 +38,20 @@ export default function App() {
   const contract = useContract(wallet.address);
   const demo = useDemoMode();
 
+  const [isDemoMode, setIsDemoMode] = useState(true);
   const [isOpening, setIsOpening] = useState(false);
   const [lastResult, setLastResult] = useState(null); // { token, tier, reward, isJackpot }
   const [history, setHistory] = useState([]);
 
-  // On-chain stats
-  const jackpot = parseFloat(contract.jackpot ?? 0);
-  const totalOpened = contract.totalOpened ?? 0;
+  // Clear history on mode switch
+  React.useEffect(() => {
+    setHistory([]);
+    setLastResult(null);
+  }, [isDemoMode]);
+
+  // On-chain or Demo stats
+  const displayJackpot = isDemoMode ? demo.jackpot : parseFloat(contract.jackpot ?? 0);
+  const displayTotalOpened = isDemoMode ? demo.totalOpened : (contract.totalOpened ?? 0);
 
   const handleOpen = useCallback(async () => {
     if (isOpening) return;
@@ -53,7 +60,7 @@ export default function App() {
 
     let result;
 
-    if (contract.isDeployed && wallet.address) {
+    if (!isDemoMode && contract.isDeployed && wallet.address) {
       // ── On-chain open ──────────────────────────────────────────────
       await new Promise(r => setTimeout(r, TOTAL_ANIMATION_MS));
       const raw = await contract.openBoxOnChain();
@@ -63,6 +70,10 @@ export default function App() {
         const token = TOKENS.find(t => t.symbol === raw.tokenSymbol) ?? TOKENS[0];
         result = { token, tier, reward: parseFloat(raw.reward), isJackpot: raw.isJackpot ?? false };
       }
+    } else if (isDemoMode) {
+      // ── Demo Simulation (Free) ─────────────────────────────────────
+      await new Promise(r => setTimeout(r, TOTAL_ANIMATION_MS));
+      result = demo.simulateOpen(demo.jackpot);
     } else {
       // ── Local Simulation (Fallback) ────────────────────────────────
       // This allows testing the UI even if the contract is not yet deployed
@@ -83,8 +94,8 @@ export default function App() {
 
   // Merge contract history with local simulation results
   const displayHistory = useMemo(() => {
-    // If not deployed, use local history
-    if (!contract.isDeployed) return history;
+    // If in demo mode or not deployed, use local history
+    if (isDemoMode || !contract.isDeployed) return history;
     
     // Map contract events to the UI format
     const events = (contract.recentHistory || []).map(item => {
@@ -102,7 +113,7 @@ export default function App() {
     }).filter(Boolean);
 
     return [...events, ...history];
-  }, [contract.recentHistory, contract.isDeployed, history]);
+  }, [contract.recentHistory, contract.isDeployed, history, isDemoMode]);
 
   return (
     <div className="app-root">
@@ -131,6 +142,11 @@ export default function App() {
           </div>
         </div>
 
+        <div className="mode-toggle">
+          <button className={`toggle-btn ${isDemoMode ? 'active' : ''}`} onClick={() => setIsDemoMode(true)}>Demo Mode</button>
+          <button className={`toggle-btn ${!isDemoMode ? 'active' : ''}`} onClick={() => setIsDemoMode(false)}>Live on Base</button>
+        </div>
+
         <WalletBar wallet={wallet} onConnect={wallet.connect} />
       </header>
 
@@ -138,9 +154,9 @@ export default function App() {
       <main className="app-main">
         {/* Left column: jackpot + history */}
         <aside className="app-aside">
-          <JackpotPool jackpot={jackpot} totalOpened={totalOpened} />
+          <JackpotPool jackpot={displayJackpot} totalOpened={displayTotalOpened} />
           
-          {wallet.address && (
+          {!isDemoMode && wallet.address && (
             <div className="claim-panel glass-panel">
               <div className="claim-header">
                 <span>🎁</span>
@@ -167,7 +183,7 @@ export default function App() {
         {/* Center: mystery box */}
         <section className="app-center">
           {/* Network Enforcement Overlay */}
-          {wallet.address && !wallet.isCorrectChain && (
+          {!isDemoMode && wallet.address && !wallet.isCorrectChain && (
             <div className="network-warning">
               <div className="network-warning-content">
                 <span className="network-icon">🌐</span>
@@ -192,6 +208,7 @@ export default function App() {
               isOpening={isOpening}
               wallet={wallet}
               boxPrice={BOX_PRICE}
+              isDemoMode={isDemoMode}
             />
           )}
         </section>
@@ -206,28 +223,28 @@ export default function App() {
             <div className="tier-row tier-row--common">
               <span className="tier-dot" style={{ background: '#22d3ee' }} />
               <div className="tier-info">
-                <span className="tier-name">Common</span>
+                <span className="tier-name">Common {!isDemoMode && <span style={{fontSize: '0.8em', opacity: 0.7}}>(99.49%)</span>}</span>
               </div>
               <span className="tier-reward">0.0000005–0.0001 ETH</span>
             </div>
             <div className="tier-row tier-row--rare">
               <span className="tier-dot" style={{ background: '#a855f7' }} />
               <div className="tier-info">
-                <span className="tier-name">Rare</span>
+                <span className="tier-name">Rare {!isDemoMode && <span style={{fontSize: '0.8em', opacity: 0.7}}>(0.5%)</span>}</span>
               </div>
               <span className="tier-reward">0.001–0.01 ETH</span>
             </div>
             <div className="tier-row tier-row--legendary">
               <span className="tier-dot" style={{ background: '#f7c94f' }} />
               <div className="tier-info">
-                <span className="tier-name">Legendary ⚡</span>
+                <span className="tier-name">Legendary ⚡ {!isDemoMode && <span style={{fontSize: '0.8em', opacity: 0.7}}>(0.01%)</span>}</span>
               </div>
               <span className="tier-reward">Jackpot!</span>
             </div>
 
             <div className="tier-price-info">
               <span>Box price:</span>
-              <strong>{BOX_PRICE} ETH</strong>
+              <strong>{isDemoMode ? 'FREE' : `${BOX_PRICE} ETH`}</strong>
             </div>
           </div>
 

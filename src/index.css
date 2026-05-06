@@ -76,6 +76,33 @@ body {
 }
 .app-subtitle { font-size: 0.75rem; color: #4f8ef7; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
 
+/* ── Mode Toggle ───────────────────────────────────────────── */
+.mode-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 100px;
+  padding: 4px;
+  gap: 4px;
+}
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.toggle-btn:hover { color: var(--text); }
+.toggle-btn.active {
+  background: linear-gradient(135deg, #f7c94f, #fb923c);
+  color: #0a0b1a;
+  box-shadow: 0 2px 10px rgba(247,201,79,0.3);
+}
+
 /* ── Demo Banner ───────────────────────────────────────────── */
 .demo-banner {
   position: relative; z-index: 10;
