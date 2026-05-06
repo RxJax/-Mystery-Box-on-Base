@@ -115,6 +115,14 @@ export default function App() {
     return [...events, ...history];
   }, [contract.recentHistory, contract.isDeployed, history, isDemoMode]);
 
+  // Player stats for the last 24 hours
+  const displayPlayerHistory = useMemo(() => {
+    if (isDemoMode) return history;
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+    return contract.playerHistory.filter(h => now - h.timestamp < oneDay);
+  }, [contract.playerHistory, history, isDemoMode]);
+
   return (
     <div className="app-root">
       {/* Animated background stars */}
@@ -145,6 +153,11 @@ export default function App() {
         <div className="mode-toggle">
           <button className={`toggle-btn ${isDemoMode ? 'active' : ''}`} onClick={() => setIsDemoMode(true)}>Demo Mode</button>
           <button className={`toggle-btn ${!isDemoMode ? 'active' : ''}`} onClick={() => setIsDemoMode(false)}>Live on Base</button>
+        </div>
+
+        <div className="stats-info-guide" title="Stats for boxes opened and streaks reset every 24 hours automatically.">
+          <span className="stats-info-icon">ⓘ</span>
+          <span className="stats-info-text">Stats reset daily</span>
         </div>
 
         <WalletBar wallet={wallet} onConnect={wallet.connect} />
@@ -248,7 +261,7 @@ export default function App() {
             </div>
           </div>
 
-          <StatsBar history={displayHistory} />
+          <StatsBar history={displayPlayerHistory} />
         </aside>
       </main>
     </div>

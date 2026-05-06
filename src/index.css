@@ -610,3 +610,45 @@ body {
 .btn-open-box--warning:hover:not(:disabled) {
   box-shadow: 0 12px 40px rgba(124, 58, 237, 0.5);
 }
+
+/* ── Stats Info Guide ───────────────────────────────────────── */
+.stats-info-guide {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  padding: 6px 12px;
+  border-radius: 100px;
+  cursor: help;
+  transition: all 0.3s;
+}
+
+.stats-info-guide:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--blue);
+}
+
+.stats-info-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--blue);
+  color: #080b1a;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.stats-info-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.stats-info-guide:hover .stats-info-text {
+  color: var(--text);
+}
+

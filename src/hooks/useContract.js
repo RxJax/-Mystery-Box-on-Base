@@ -7,6 +7,7 @@ export function useContract(walletAddress) {
   const [totalOpened, setTotalOpened]   = useState(null);
   const [claimableBalance, setClaimableBalance] = useState('0');
   const [recentHistory, setRecentHistory] = useState([]);
+  const [playerHistory, setPlayerHistory] = useState([]);
   const [isLoading, setIsLoading]       = useState(false);
   const [txHash, setTxHash]             = useState(null);
   const [error, setError]               = useState(null);
@@ -38,7 +39,8 @@ export function useContract(walletAddress) {
       ];
       
       if (walletAddress) {
-        calls.push(contract.claimableRewards(walletAddress));
+        calls.push(contract.claimableRewards(walletAddress).catch(() => 0n));
+        calls.push(contract.getPlayerHistory(walletAddress).catch(() => []));
       }
 
       const results = await Promise.all(calls);
@@ -57,10 +59,20 @@ export function useContract(walletAddress) {
       })).reverse();
       setRecentHistory(events);
 
-      if (walletAddress && results[3]) {
+      if (walletAddress && results[3] !== undefined) {
         setClaimableBalance(ethers.formatEther(results[3]));
+        
+        // Parse player history
+        const pHistory = (results[4] || []).map(item => ({
+          tier: Number(item.tier),
+          reward: ethers.formatEther(item.reward),
+          tokenSymbol: item.tokenSymbol,
+          timestamp: Number(item.timestamp) * 1000, // s to ms
+        })).reverse();
+        setPlayerHistory(pHistory);
       } else {
         setClaimableBalance('0');
+        setPlayerHistory([]);
       }
     } catch (err) {
       console.warn('Contract read error:', err.message);
@@ -146,6 +158,7 @@ export function useContract(walletAddress) {
     totalOpened,
     claimableBalance,
     recentHistory,
+    playerHistory,
     isLoading,
     txHash,
     error,
