@@ -247,7 +247,7 @@ export default function App() {
             </div>
           </div>
 
-          <StatsBar history={displayStatsHistory} />
+          <StatsBar history={displayHistory} />
         </aside>
       </main>
     </div>
