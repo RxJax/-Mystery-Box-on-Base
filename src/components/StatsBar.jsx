@@ -17,7 +17,15 @@ export default function StatsBar({ history }) {
   const legCount = history.filter(h => h.tier === TIERS.LEGENDARY).length;
 
   return (
-    <div className="stats-bar">
+    <div className="stats-bar" style={{ position: 'relative' }}>
+      <div 
+        className="stats-info-guide stats-info-guide--mini" 
+        title="Stats for boxes opened and streaks reset every 24 hours automatically."
+        style={{ position: 'absolute', top: '8px', right: '8px', padding: '4px', border: 'none', background: 'transparent' }}
+      >
+        <span className="stats-info-icon" style={{ width: '16px', height: '16px', fontSize: '0.65rem' }}>ⓘ</span>
+      </div>
+
       <div className="stat-item">
         <span className="stat-value">{total}</span>
         <span className="stat-label">Boxes Opened</span>

@@ -146,11 +146,6 @@ export default function App() {
           <button className={`toggle-btn ${!isDemoMode ? 'active' : ''}`} onClick={() => setIsDemoMode(false)}>Live on Base</button>
         </div>
 
-        <div className="stats-info-guide" title="Stats for boxes opened and streaks reset every 24 hours automatically.">
-          <span className="stats-info-icon">ⓘ</span>
-          <span className="stats-info-text">Stats reset daily</span>
-        </div>
-
         <WalletBar wallet={wallet} onConnect={wallet.connect} />
       </header>
 
