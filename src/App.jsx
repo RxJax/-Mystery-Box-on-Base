@@ -223,21 +223,21 @@ export default function App() {
             <div className="tier-row tier-row--common">
               <span className="tier-dot" style={{ background: '#22d3ee' }} />
               <div className="tier-info">
-                <span className="tier-name">Common {!isDemoMode && <span style={{fontSize: '0.8em', opacity: 0.7}}>(99.49%)</span>}</span>
+                <span className="tier-name">Common</span>
               </div>
               <span className="tier-reward">0.0000005–0.0001 ETH</span>
             </div>
             <div className="tier-row tier-row--rare">
               <span className="tier-dot" style={{ background: '#a855f7' }} />
               <div className="tier-info">
-                <span className="tier-name">Rare {!isDemoMode && <span style={{fontSize: '0.8em', opacity: 0.7}}>(0.5%)</span>}</span>
+                <span className="tier-name">Rare</span>
               </div>
               <span className="tier-reward">0.001–0.01 ETH</span>
             </div>
             <div className="tier-row tier-row--legendary">
               <span className="tier-dot" style={{ background: '#f7c94f' }} />
               <div className="tier-info">
-                <span className="tier-name">Legendary ⚡ {!isDemoMode && <span style={{fontSize: '0.8em', opacity: 0.7}}>(0.01%)</span>}</span>
+                <span className="tier-name">Legendary ⚡</span>
               </div>
               <span className="tier-reward">Jackpot!</span>
             </div>
