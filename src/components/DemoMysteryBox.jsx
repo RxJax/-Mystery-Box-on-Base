@@ -67,7 +67,7 @@ export default function DemoMysteryBox({ onOpen, isOpening }) {
           <div className="box-lid-inner" style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
              {/* Example Token on Lid */}
              <img 
-               src={`/${exampleToken.file}`} 
+               src={`/tokens/${exampleToken.file}`} 
                alt="Example Token" 
                style={{ 
                  width: '32px', 
@@ -81,7 +81,7 @@ export default function DemoMysteryBox({ onOpen, isOpening }) {
              />
              <span className="box-question">?</span>
              <img 
-               src={`/${exampleToken.file}`} 
+               src={`/tokens/${exampleToken.file}`} 
                alt="Example Token" 
                style={{ 
                  width: '32px', 

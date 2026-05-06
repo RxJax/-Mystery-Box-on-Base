@@ -49,9 +49,10 @@ export function useContract(walletAddress) {
       setTotalOpened(Number(results[1]));
       
       // Parse events for global history
+      const tierMap = { 0: TIERS.COMMON, 1: TIERS.RARE, 2: TIERS.LEGENDARY };
       const events = (results[2] || []).map(e => ({
         player: e.args?.player || '0x0',
-        tier: e.args?.tier !== undefined ? Number(e.args.tier) : 0,
+        tier: tierMap[Number(e.args.tier)] || TIERS.COMMON,
         reward: e.args?.reward ? ethers.formatEther(e.args.reward) : '0',
         tokenSymbol: e.args?.tokenSymbol || 'ETH',
         timestamp: Date.now(), 
@@ -63,8 +64,9 @@ export function useContract(walletAddress) {
         setClaimableBalance(ethers.formatEther(results[3]));
         
         // Parse player history
+        const tierMap = { 0: TIERS.COMMON, 1: TIERS.RARE, 2: TIERS.LEGENDARY };
         const pHistory = (results[4] || []).map(item => ({
-          tier: Number(item.tier),
+          tier: tierMap[item.tier] || TIERS.COMMON,
           reward: ethers.formatEther(item.reward),
           tokenSymbol: item.tokenSymbol,
           timestamp: Number(item.timestamp) * 1000, // s to ms

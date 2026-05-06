@@ -89,12 +89,12 @@ export default function MysteryBox({ onOpen, isOpening, wallet, boxPrice, isDemo
             {isDemoMode && (
               <>
                 <img 
-                  src={`/${TOKENS.find(t => t.symbol === 'ETH')?.file || 'ethereum-eth-logo.png'}`} 
+                  src={`/tokens/${TOKENS.find(t => t.symbol === 'ETH')?.file || 'ethereum-eth-logo.png'}`} 
                   alt="" 
                   style={{ width: '28px', height: '28px', opacity: 0.4, filter: 'grayscale(1) brightness(0.5)', position: 'absolute', top: '8px', left: '10px' }} 
                 />
                 <img 
-                  src={`/${TOKENS.find(t => t.symbol === 'BTC')?.file || 'bitcoin-btc-logo.png'}`} 
+                  src={`/tokens/${TOKENS.find(t => t.symbol === 'BTC')?.file || 'bitcoin-btc-logo.png'}`} 
                   alt="" 
                   style={{ width: '28px', height: '28px', opacity: 0.4, filter: 'grayscale(1) brightness(0.5)', position: 'absolute', bottom: '8px', right: '10px' }} 
                 />
